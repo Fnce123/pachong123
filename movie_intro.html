@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>豆瓣 Top250 电影展示</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-image: url('abc.jpg'); /* 替换为你的背景图片路径 */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-color: rgba(255, 255, 255, 0.5); /* 添加半透明背景颜色 */
+    }
+
+    header {
+      text-align: center;
+      color: white;
+      background-color: rgba(0, 0, 0, 0.5); /* 修改标题背景颜色为半透明 */
+      padding: 10px;
+      margin-bottom: 10px;
+      font-size: 1.5em; /* 调整标题字体大小 */
+    }
+
+    main {
+      background-color: rgba(255, 255, 255, 0.9); /* 透明度稍低，使背景图更为清晰 */
+      padding: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 5px;
+      text-align: left;
+      font-size: 0.8em; /* 调整表格字体大小 */
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 5px;
+      margin-bottom: 10px;
+      font-size: 0.8em; /* 调整输入框字体大小 */
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>豆瓣 Top250 电影展示</h1>
+    <p>在此展示豆瓣 Top250 电影的内容</p>
+  </header>
+
+  <main>
+    <h2>Top 250 电影</h2>
+    <input type="text" id="searchInput" placeholder="输入搜索关键词">
+    <div id="excelContent"></div>
+  </main>
+
+  <script>
+    const fileInput = document.createElement('input');
+    fileInput.setAttribute('type', 'file');
+    fileInput.addEventListener('change', handleFile);
+
+    function handleFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[firstSheetName];
+        const html = XLSX.utils.sheet_to_html(sheet);
+
+        document.getElementById('excelContent').innerHTML = html;
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function filterTable() {
+      const searchText = document.getElementById('searchInput').value.toLowerCase();
+      const table = document.getElementById('excelContent').getElementsByTagName('table')[0];
+      const rows = table.getElementsByTagName('tr');
+
+      for (let i = 1; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName('td');
+        let found = false;
+
+        for (let j = 0; j < cells.length; j++) {
+          const cellText = cells[j].textContent.toLowerCase();
+          if (cellText.includes(searchText)) {
+            found = true;
+            break;
+          }
+        }
+
+        if (found) {
+          rows[i].style.display = '';
+        } else {
+          rows[i].style.display = 'none';
+        }
+      }
+    }
+
+    document.getElementById('searchInput').addEventListener('input', filterTable);
+    document.body.appendChild(fileInput);
+  </script>
+</body>
+</html>
